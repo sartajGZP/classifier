@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classifier</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; padding: 16px; font-family: system-ui, sans-serif; background: #f5f5f5; line-height: 1.5; }
+.container { max-width: 800px; margin: auto; }
+.card { background: white; padding: 16px; border-radius: 10px; margin-bottom: 16px; }
+.meta { color: #666; font-size: .9rem; }
+.title { margin-top: 8px; }
+.content { white-space: pre-wrap; word-break: break-word; }
+.categories label {
+    display: flex; align-items: center; padding: 14px; margin-bottom: 8px;
+    border: 1px solid #ddd; border-radius: 8px; background: white; transition: all 0.2s ease;
+}
+/* Styling for High-Probability AI Suggestions */
+.categories label.predicted { background: #f0f4ff; border-color: #7c4dff; }
+.categories label.predicted::after {
+    content: " (AI Suggestion)"; font-size: 0.8rem; color: #7c4dff; font-weight: bold; margin-left: auto;
+}
+.categories input { transform: scale(1.4); margin-right: 12px; }
+.nav { display: flex; gap: 10px; margin-top: 20px; }
+.button, .nav button {
+    flex: 1; display: flex; justify-content: center; align-items: center;
+    padding: 14px; border-radius: 8px; border: none; background: #1976d2;
+    color: white; text-decoration: none; font-size: 1rem; cursor: pointer;
+}
+.disabled { background: #999; pointer-events: none; }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h2>Classifier</h2>
+        <div class="meta">Post {{ index + 1 }} / {{ total }}</div>
+        <h3 class="title">{{ document.title }}</h3>
+    </div>
+
+    <div class="card">
+        <div class="content">{{ document.body }}</div>
+    </div>
+
+    <form method="post">
+        <div class="card">
+            <h3>Categories</h3>
+            <div class="categories">
+                {% for category in categories %}
+                {% set is_selected = selected contains category.name %}
+                <label class="{% if is_selected and is_predicted %}predicted{% endif %}">
+                    <input
+                        type="checkbox"
+                        name="category"
+                        value="{{ category.name }}"
+                        {% if is_selected %}checked{% endif %}
+                    >
+                    {{ category.name | capitalize }}
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- STRICT ±1 PAGE NAV - NO SKIP BUTTON -->
+        <div class="nav">
+            <button
+                type="submit"
+                name="action"
+                value="previous"
+                {% if index == 0 %}disabled class="disabled"{% endif %}
+            >
+                ⬅ Previous
+            </button>
+
+            <button
+                type="submit"
+                name="action"
+                value="next"
+                {% if index + 1 >= total %}disabled class="disabled"{% endif %}
+            >
+                Next ➜
+            </button>
+        </div>
+    </form>
+
+    <div class="card" style="margin-top: 20px;">
+        <h3 style="margin-top: 0;">Add New Category</h3>
+        <form action="/add-category" method="post" style="display: flex; gap: 10px; margin-top: 10px;">
+            <input type="hidden" name="redirect_index" value="{{ index }}">
+            <input
+                type="text"
+                name="new_category"
+                placeholder="New tag..."
+                required
+                style="flex: 1; padding: 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;"
+            >
+            <button type="submit" class="button" style="flex: 0 1 auto; padding: 14px 20px;">
+                + Add Tag
+            </button>
+        </form>
+    </div>
+</div>
+</body>
+</html>
+

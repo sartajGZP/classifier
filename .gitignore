@@ -1,0 +1,45 @@
+# Gradle
+.gradle/
+build/
+
+# Kotlin
+*.class
+
+# IntelliJ / Android Studio
+.idea/
+*.iml
+out/
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Runtime data
+data/
+models/
+
+# Generated documents (keep if they can be regenerated)
+documents/
+
+# Python (if you add Python utilities later)
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local environment
+.env
+.env.*
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~

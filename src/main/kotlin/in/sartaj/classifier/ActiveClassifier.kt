@@ -50,24 +50,24 @@ class ActiveClassifier {
         isTrained = models.isNotEmpty()
     }
 
-    fun predict(text: String, threshold: Double = 0.55): List<String> {
-        if (!isTrained) return emptyList()
-        val bow = bagOfWords ?: return emptyList()
+    fun predictProbabilities(text: String): Map<String, Double> {
+        if (!isTrained) return emptyMap()
+        val bow = bagOfWords ?: return emptyMap()
         
-        // FIX: Convert prediction target from IntArray to DoubleArray
         val xInt = bow.apply(text)
         val xDouble = xInt.map { it.toDouble() }.toDoubleArray()
 
-        val predictions = mutableListOf<String>()
+        val probabilities = mutableMapOf<String, Double>()
         for ((category, model) in models) {
             val posteriors = DoubleArray(2)
             model.predict(xDouble, posteriors)
-            val positiveProbability = posteriors[1] 
-            if (positiveProbability >= threshold) {
-                predictions.add(category)
-            }
+            probabilities[category] = posteriors[1]
         }
-        return predictions
+        return probabilities
+    }
+
+    fun predict(text: String, threshold: Double = 0.4): List<String> {
+        return predictProbabilities(text).filter { it.value > threshold }.keys.toList()
     }
 }
 

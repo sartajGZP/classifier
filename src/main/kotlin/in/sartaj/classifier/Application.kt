@@ -14,6 +14,7 @@ val documents = Storage.loadDocuments()
 val categories = Storage.loadCategories()
 val labels = Storage.loadLabels()
 val activeModel = ActiveClassifier()
+var selectionsSinceLastTrain = 0
 
 fun main() {
     activeModel.train(documents, labels)
@@ -43,9 +44,10 @@ fun Application.module() {
             var selected = labels[doc.path] ?: emptyList()
             var isPredicted = false
 
+            val probabilities = activeModel.predictProbabilities("${doc.title} ${doc.body}")
             // Ask ML model only if untagged
             if (selected.isEmpty()) {
-                selected = activeModel.predict("${doc.title} ${doc.body}")
+                selected = probabilities.filter { it.value > 0.4 }.keys.toList()
                 isPredicted = selected.isNotEmpty()
             }
 
@@ -55,7 +57,8 @@ fun Application.module() {
                 "total" to documents.size,
                 "categories" to categories,
                 "selected" to selected,
-                "is_predicted" to isPredicted
+                "is_predicted" to isPredicted,
+                "probabilities" to probabilities
             )))
         }
 
@@ -69,8 +72,12 @@ fun Application.module() {
             if (selectedCats.isNotEmpty()) {
                 labels[docKey] = selectedCats
                 Storage.saveLabels(labels)
-                // Retrain ONLY when a category is selected
-                activeModel.train(documents, labels)
+
+                selectionsSinceLastTrain++
+                if (selectionsSinceLastTrain >= 5) {
+                    activeModel.train(documents, labels)
+                    selectionsSinceLastTrain = 0
+                }
             } else {
                 // If empty selection, remove from saved labels but DO NOT retrain
                 if (labels.containsKey(docKey)) {

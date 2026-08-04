@@ -57,6 +57,10 @@ body { margin: 0; padding: 16px; font-family: system-ui, sans-serif; background:
                         {% if is_selected %}checked{% endif %}
                     >
                     {{ category.name | capitalize }}
+                    {% if probabilities is not null and probabilities.containsKey(category.name) %}
+                        {% set prob = probabilities.get(category.name) * 100 %}
+                        <span style="margin-left: 8px; color: #888; font-size: 0.9em;">({{ prob | numberformat("#.0") }}%)</span>
+                    {% endif %}
                 </label>
                 {% endfor %}
             </div>

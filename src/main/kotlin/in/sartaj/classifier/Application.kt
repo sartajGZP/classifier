@@ -14,7 +14,6 @@ val documents = Storage.loadDocuments()
 val categories = Storage.loadCategories()
 val labels = Storage.loadLabels()
 val activeModel = ActiveClassifier()
-var selectionsSinceLastTrain = 0
 
 fun main() {
     activeModel.train(documents, labels)
@@ -45,6 +44,7 @@ fun Application.module() {
             var isPredicted = false
 
             val probabilities = activeModel.predictProbabilities("${doc.title} ${doc.body}")
+            
             // Ask ML model only if untagged
             if (selected.isEmpty()) {
                 selected = probabilities.filter { it.value > 0.4 }.keys.toList()
@@ -73,13 +73,7 @@ fun Application.module() {
                 labels[docKey] = selectedCats
                 Storage.saveLabels(labels)
 
-                selectionsSinceLastTrain++
-                if (selectionsSinceLastTrain >= 5) {
-                    activeModel.train(documents, labels)
-                    selectionsSinceLastTrain = 0
-                }
             } else {
-                // If empty selection, remove from saved labels but DO NOT retrain
                 if (labels.containsKey(docKey)) {
                     labels.remove(docKey)
                     Storage.saveLabels(labels)
@@ -105,6 +99,9 @@ fun Application.module() {
             }
             call.respondRedirect("/post/$redirectIdx")
         }
+	post("/train") {
+    activeModel.train(documents, labels)
+    call.respondRedirect("/post/0")
+}
     }
 }
-

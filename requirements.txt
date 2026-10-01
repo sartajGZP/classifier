@@ -1,0 +1,8 @@
+torch
+transformers>=4.40.0
+datasets
+scikit-learn
+accelerate
+pandas
+numpy
+
